@@ -30,6 +30,64 @@ Now access Dashboard at:
 [`http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/`](
 http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/).
 
+can also use NodePort service type to expose the port then can access by public IP with port 
+below using port 31630 so can access by using https://x.x.x.x:31630
+## yaml file edit
+```
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    k8s-app: kubernetes-dashboard
+  name: kubernetes-dashboard
+  namespace: kubernetes-dashboard
+spec:
+  type: NodePort   #add here manually
+  ports:
+    - nodePort: 31630  #hardcode
+      port: 443
+      targetPort: 8443
+  selector:
+    k8s-app: kubernetes-dashboard
+
+```
+in v1 version using below command 
+```
+$ mkdir certs
+$ openssl req -nodes -newkey rsa:2048 -keyout certs/dashboard.key -out certs/dashboard.csr -subj "/C=/ST=/L=/O=/OU=/CN=kubernetes-dashboard"
+$ openssl x509 -req -sha256 -days 365 -in certs/dashboard.csr -signkey certs/dashboard.key -out certs/dashboard.crt
+$ kubectl create secret generic kubernetes-dashboard-certs --from-file=certs -n kube-system
+$ kubectl create -f kubernetes-dashboard.yaml
+```
+in v2 create namespace kubernetes-dashboard first then apply the yaml file
+```
+before apply the yaml file
+`$ openssl req -nodes -newkey rsa:2048 -keyout certs/dashboard.key -out certs/dashboard.csr -subj "/C=/ST=/L=/O=/OU=/CN=kubernetes-dashboard"`
+`$ openssl x509 -req -sha256 -days 365 -in certs/dashboard.csr -signkey certs/dashboard.key -out certs/dashboard.crt`
+
+create the namespace first
+`$ kubectl create namespace kubernetes-dashboard`
+then create the screct
+`$ kubectl create secret generic kubernetes-dashboard-certs --from-file=certs -n kubernetes-dashboard`
+then apply the yaml file, even it will show error secret and namespace exist 
+`$ kubectl create -f kubernetes-dashboard.yaml
+serviceaccount/kubernetes-dashboard created
+service/kubernetes-dashboard created
+secret/kubernetes-dashboard-csrf created
+secret/kubernetes-dashboard-key-holder created
+configmap/kubernetes-dashboard-settings created
+role.rbac.authorization.k8s.io/kubernetes-dashboard created
+clusterrole.rbac.authorization.k8s.io/kubernetes-dashboard created
+rolebinding.rbac.authorization.k8s.io/kubernetes-dashboard created
+clusterrolebinding.rbac.authorization.k8s.io/kubernetes-dashboard created
+deployment.apps/kubernetes-dashboard created
+service/dashboard-metrics-scraper created
+deployment.apps/dashboard-metrics-scraper created
+Error from server (AlreadyExists): error when creating "kubernetes-dashboard.yaml": namespaces "kubernetes-dashboard" already exists
+Error from server (AlreadyExists): error when creating "kubernetes-dashboard.yaml": secrets "kubernetes-dashboard-certs" already exists`
+
+```
+
 ## Create An Authentication Token (RBAC)
 To find out how to create sample user and log in follow [Creating sample user](docs/user/access-control/creating-sample-user.md) guide.
 
