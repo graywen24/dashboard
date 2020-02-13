@@ -85,7 +85,10 @@ service/dashboard-metrics-scraper created
 deployment.apps/dashboard-metrics-scraper created
 Error from server (AlreadyExists): error when creating "kubernetes-dashboard.yaml": namespaces "kubernetes-dashboard" already exists
 Error from server (AlreadyExists): error when creating "kubernetes-dashboard.yaml": secrets "kubernetes-dashboard-certs" already exists`
-
+xxxxxmy@k8s-master:~/course/dashboard$ kubectl get svc -n kubernetes-dashboard
+NAME                        TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)         AGE
+dashboard-metrics-scraper   ClusterIP   10.98.37.58      <none>        8000/TCP        18h
+kubernetes-dashboard        NodePort    10.100.164.171   <none>        443:31630/TCP   18h
 ```
 
 ## Create An Authentication Token (RBAC)
